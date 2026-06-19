@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -31,9 +32,40 @@ public class GoogleDriveIntegrationService {
                 .build();
     }
 
+    public String getOrCreatePicboxFolder(OAuth2AuthorizedClient client) throws Exception {
+        Drive driveService = getDriveService(client);
+        String folderName = "PicBox";
+        String query = "mimeType='application/vnd.google-apps.folder' and name='" + folderName + "' and trashed=false";
+        
+        FileList result = driveService.files().list()
+                .setQ(query)
+                .setSpaces("drive")
+                .setFields("files(id, name)")
+                .execute();
+
+        if (!result.getFiles().isEmpty()) {
+            return result.getFiles().get(0).getId();
+        } else {
+            File fileMetadata = new File();
+            fileMetadata.setName(folderName);
+            fileMetadata.setMimeType("application/vnd.google-apps.folder");
+
+            File folder = driveService.files().create(fileMetadata)
+                    .setFields("id")
+                    .execute();
+            return folder.getId();
+        }
+    }
+
     public List<File> getDriveFiles(OAuth2AuthorizedClient client) throws Exception {
         Drive driveService = getDriveService(client);
+        
+        String folderId = getOrCreatePicboxFolder(client);
+        
+        String query = "'" + folderId + "' in parents and trashed=false";
+
         FileList result = driveService.files().list()
+                .setQ(query)
                 .setPageSize(10)
                 .setFields("nextPageToken, files(id, name, mimeType)")
                 .execute();
@@ -42,9 +74,12 @@ public class GoogleDriveIntegrationService {
 
     public String uploadFile(OAuth2AuthorizedClient client, MultipartFile multipartFile) throws Exception {
         Drive driveService = getDriveService(client);
+        String folderId = getOrCreatePicboxFolder(client);
         
         File fileMetadata = new File();
         fileMetadata.setName(multipartFile.getOriginalFilename());
+        
+        fileMetadata.setParents(Collections.singletonList(folderId));
 
         InputStreamContent mediaContent = new InputStreamContent(
                 multipartFile.getContentType(), 
