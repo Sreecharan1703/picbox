@@ -1,0 +1,19 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: secrets.env.CLIENT_ID
+            client-secret: secrets.env.CLIENT_SECRET
+            scope:
+              - email
+              - profile
+              - https://www.googleapis.com/auth/drive
+        provider:
+          google:
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
