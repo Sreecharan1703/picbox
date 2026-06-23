@@ -22,8 +22,6 @@ spring:
           google:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
   ai:
-    retry:
-      max-attempts: 1
     google:
       genai:
         api-key: ${GENAI_API_KEY}

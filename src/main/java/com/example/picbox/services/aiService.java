@@ -25,12 +25,15 @@ public class aiService {
         "Return ONLY a valid matching file names separated by commas. " +
         "Do not include any markdown formatting, conversational text, or explanations.";
 
+        log.info("Sending prompt to AI: " + prompt);
+
         try {
             String aiResponse = this.chatClient.prompt()
                     .user(prompt)
                     .call()
                     .content();
 
+            log.info("Received AI response: " + aiResponse);
             String[] matchingFileNames = aiResponse.split(",");
             for (int i = 0; i < matchingFileNames.length; i++) {
                 matchingFileNames[i] = matchingFileNames[i].trim();
