@@ -2,7 +2,7 @@ package com.example.picbox.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 @Controller
@@ -18,8 +18,9 @@ public class HomeController {
         return "main";
     }
 
-    @GetMapping("/search")
-    public String SearchFiles() {
-        return "searchpage";
+    @RequestMapping("/addpic")
+    public String addPicture() {
+        return "addpic";
     }
+    
 }

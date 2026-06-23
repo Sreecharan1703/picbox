@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Gallery</title>
+</head>
+<body>
+    <h1>Welcome, <span th:text="${name}">User</span>!</h1>
+
+    <hr>
+    <hr>
+
+    <form action='/searchfiles' method='get'>
+        <label for='name'>Search Files:</label>
+        <input type='text' id='name' name='name' required>
+        <button type='submit'>Search</button>
+    </form>
+    <br>
+
+    <div th:if="${error}" style="color:red; margin-bottom: 20px;" th:text="${error}"></div>
+    <div th:if="${searchresults}" style="color:green; margin-bottom: 20px;" th:text="${searchresults}"></div>
+    <hr>
+
+    <ul>
+        <li th:each="file : ${resultfiles}">
+            <strong th:text="${file.name}">File Name</strong> 
+            <a th:if="${!file.mimeType.startsWith('application/vnd.google-apps')}" 
+               th:href="@{/download/{id}(id=${file.id})}">[Download]</a>
+            <br>
+        </li>
+    </ul>
+    
+    <div th:if="${resultfiles == null}" style="margin-top: 20px; margin-bottom: 20px;">
+        <ul>
+            <li th:each="file : ${files}">
+                <strong th:text="${file.name}">File Name</strong> 
+                <a th:if="${!file.mimeType.startsWith('application/vnd.google-apps')}" 
+                th:href="@{/download/{id}(id=${file.id})}">[Download]</a>
+                <br>
+            </li>
+        </ul>
+    </div>
+
+    <br>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

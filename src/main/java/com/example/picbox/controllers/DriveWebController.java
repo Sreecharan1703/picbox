@@ -36,8 +36,8 @@ public class DriveWebController {
         return "index_view";
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard(
+    @GetMapping("/gallery")
+    public String gallery(
             @AuthenticationPrincipal OAuth2User oauth2User,
             @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
             Model model) {
@@ -51,7 +51,7 @@ public class DriveWebController {
             model.addAttribute("error", "Could not fetch Drive files: " + e.getMessage());
         }
         
-        return "dashboard_view";
+        return "gallery_view";
     }
 
     @PostMapping("/upload")
@@ -64,7 +64,7 @@ public class DriveWebController {
         } catch (Exception e) {
             model.addAttribute("error", "Upload failed: " + e.getMessage());
         }
-        return "redirect:/dashboard";
+        return "redirect:/gallery";
     }
 
     @GetMapping("/download/{id}")
@@ -85,19 +85,18 @@ public class DriveWebController {
     }
 
     @GetMapping("/searchfiles")
-    public ResponseEntity<String> search(@RequestParam String name, Model model,
+    public String search(@RequestParam String name, Model model,
         @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient
     ) {
         try {
             List<File> files = driveService.searchFilesByName(authorizedClient, name);
-            if(files.isEmpty()) {
-                return ResponseEntity.status(404).body("No files found with name: " + name);
-            }   
-            model.addAttribute("files", files);
-            return ResponseEntity.ok("Found " + files.size() + " files with similar name: " + name);
+            model.addAttribute("resultfiles", files);
+            String resultMessage = files.size() + " files found with name: " + name;
+            model.addAttribute("searchresults", resultMessage);
         } catch (Exception e) {
-            return ResponseEntity.status(404).body("No files found with name: " + name);
+            model.addAttribute("error", e.getMessage());
         }
+        return "forward:/gallery";
     }
     
 }
