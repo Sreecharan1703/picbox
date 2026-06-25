@@ -1,6 +1,7 @@
 package com.example.picbox.controllers;
 
 import com.example.picbox.services.GoogleDriveIntegrationService;
+import com.example.picbox.services.aiService;
 import com.google.api.services.drive.model.File;
 
 import lombok.var;
@@ -22,12 +23,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 
+
 @Controller
 public class DriveWebController {
 
+    private final aiService aiservice;
     private final GoogleDriveIntegrationService driveService;
 
-    DriveWebController(GoogleDriveIntegrationService driveService) {
+    DriveWebController(GoogleDriveIntegrationService driveService, aiService aiservice) {
+        this.aiservice = aiservice;
         this.driveService = driveService;
     }
 
@@ -120,5 +124,23 @@ public class DriveWebController {
         }
         return "forward:/gallery";
     }
+
+
+    @GetMapping("/quiz")
+    public String makeQuiz(@RequestParam String imageIds,Model model,
+        @AuthenticationPrincipal OAuth2User oauth2User,
+        @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient authorizedClient,
+        @RequestParam int level
+    ) {
+        String[] ids = imageIds.split("&");
+        for(String id : ids) {
+            id = id.replace("imageId=", "");
+        }
+        
+        String[] questions = aiservice.generateQuestions(authorizedClient, ids,level);
+        model.addAttribute("questions", questions);
+        return "quiz_view";
+    }
+    
     
 }
