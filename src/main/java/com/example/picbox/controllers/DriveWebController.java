@@ -27,11 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Controller
 public class DriveWebController {
 
-    private final aiService aiservice;
     private final GoogleDriveIntegrationService driveService;
 
-    DriveWebController(GoogleDriveIntegrationService driveService, aiService aiservice) {
-        this.aiservice = aiservice;
+    DriveWebController(GoogleDriveIntegrationService driveService) {
         this.driveService = driveService;
     }
 
@@ -137,10 +135,8 @@ public class DriveWebController {
             id = id.replace("imageId=", "");
         }
         
-        String[] questions = aiservice.generateQuestions(authorizedClient, ids,level);
+        String[] questions = driveService.generateQuestions(authorizedClient, ids,level);
         model.addAttribute("questions", questions);
         return "quiz_view";
     }
-    
-    
 }

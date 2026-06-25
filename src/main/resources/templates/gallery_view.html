@@ -121,7 +121,6 @@
             border-color: #16a34a;
         }
         
-        /* Updated Checkbox Styles - Moved to Right */
         .file-checkbox {
             position: absolute;
             top: 28px;
@@ -150,7 +149,6 @@
             overflow-wrap: anywhere;
         }
         
-        /* Description and Actions Styles */
         .description-box {
             display: none;
             font-size: 13px;
@@ -162,12 +160,11 @@
         }
         .description-box.expanded { display: block; }
         
-        /* New flex container for bottom actions */
         .card-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: auto; /* Pushes actions to the bottom of the card */
+            margin-top: auto; 
             padding-top: 8px;
         }
 
@@ -192,28 +189,53 @@
         }
         .download-link:hover { text-decoration: underline; }
 
-        /* Floating Make Quiz Button */
-        .make-quiz-float-btn {
+        .make-quiz-container {
             position: fixed;
             bottom: 40px;
             right: 40px;
+            background: #fff;
+            border: 1px solid #d6e6dc;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 24px rgba(22,163,74,0.15);
+            display: none;
+            z-index: 1000;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.2s ease;
+        }
+        .make-quiz-container.visible {
+            display: flex;
+        }
+        
+        .level-slider-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .level-slider-wrapper label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5d52;
+        }
+        .level-slider-wrapper input[type=range] {
+            accent-color: #16a34a;
+            cursor: pointer;
+        }
+
+        .make-quiz-btn {
             background: #16a34a;
             color: white;
             border: none;
-            padding: 16px 32px;
+            padding: 14px 28px;
             border-radius: 50px;
             font-size: 16px;
             font-weight: 800;
-            box-shadow: 0 8px 24px rgba(22,163,74,0.3);
             cursor: pointer;
-            display: none;
-            z-index: 1000;
-            transition: transform 0.2s ease, background 0.2s ease;
+            transition: background 0.2s ease, transform 0.2s ease;
         }
-        .make-quiz-float-btn.visible {
-            display: block;
-        }
-        .make-quiz-float-btn:hover {
+        .make-quiz-btn:hover {
             background: #15803d;
             transform: translateY(-2px);
         }
@@ -225,7 +247,15 @@
             .container { margin: 28px auto; }
             h1 { font-size: 28px; }
             .search-form input { min-width: 0; flex: 1; }
-            .make-quiz-float-btn { bottom: 20px; right: 20px; padding: 14px 24px; }
+            .make-quiz-container { 
+                bottom: 20px; 
+                right: 20px; 
+                padding: 16px; 
+                flex-direction: column; 
+                align-items: stretch; 
+                gap: 16px;
+            }
+            .make-quiz-btn { padding: 12px 24px; }
         }
     </style>
 </head>
@@ -300,12 +330,16 @@
         </div>
     </div>
 
-    <button id="makeQuizBtn" class="make-quiz-float-btn">Make Quiz</button>
+    <div id="makeQuizContainer" class="make-quiz-container">
+        <div class="level-slider-wrapper">
+            <label for="quizLevel">Level: <span id="levelValue">50</span></label>
+            <input type="range" id="quizLevel" min="1" max="100" value="50">
+        </div>
+        <button id="makeQuizBtn" class="make-quiz-btn">Make Quiz</button>
+    </div>
 
     <script>
-        // Task 1: Toggle description visibility (Updated logic)
         function toggleDesc(btnElement) {
-            // Traverse up to the card, then find the specific description box
             const card = btnElement.closest('.file-card');
             const descBox = card.querySelector('.description-box');
             
@@ -318,24 +352,30 @@
             }
         }
 
-        // Task 2: Handle checkbox state and Quiz button logic
         document.addEventListener('DOMContentLoaded', () => {
             const checkboxes = document.querySelectorAll('.file-checkbox');
+            
+            const makeQuizContainer = document.getElementById('makeQuizContainer');
             const makeQuizBtn = document.getElementById('makeQuizBtn');
+            const quizLevelInput = document.getElementById('quizLevel');
+            const levelValueDisplay = document.getElementById('levelValue');
 
-            const updateQuizButtonVisibility = () => {
+            quizLevelInput.addEventListener('input', (e) => {
+                levelValueDisplay.textContent = e.target.value;
+            });
+
+            const updateQuizContainerVisibility = () => {
                 const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
                 if (anyChecked) {
-                    makeQuizBtn.classList.add('visible');
+                    makeQuizContainer.classList.add('visible');
                 } else {
-                    makeQuizBtn.classList.remove('visible');
+                    makeQuizContainer.classList.remove('visible');
                 }
             };
 
             checkboxes.forEach(cb => {
-                cb.addEventListener('change', updateQuizButtonVisibility);
+                cb.addEventListener('change', updateQuizContainerVisibility);
             });
-
             makeQuizBtn.addEventListener('click', () => {
                 const selectedIds = Array.from(checkboxes)
                     .filter(cb => cb.checked)
@@ -344,6 +384,7 @@
                 if (selectedIds.length > 0) {
                     const params = new URLSearchParams();
                     selectedIds.forEach(id => params.append('imageId', id));
+                    params.append('level', quizLevelInput.value);
                     window.location.href = '/quiz?' + params.toString();
                 }
             });

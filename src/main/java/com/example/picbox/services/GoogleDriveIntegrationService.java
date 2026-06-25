@@ -10,21 +10,27 @@ import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Service
+@Slf4j
 public class GoogleDriveIntegrationService {
 
     aiService aiservice;
+    ImageService imageService;
 
-    GoogleDriveIntegrationService(aiService aiservice) {
+    GoogleDriveIntegrationService(aiService aiservice, ImageService imageService) {
         this.aiservice = aiservice;
+        this.imageService = imageService;
     }
 
     private Drive getDriveService(OAuth2AuthorizedClient client) throws Exception {
@@ -122,6 +128,23 @@ public class GoogleDriveIntegrationService {
                 .toList();
 
         return outputFileList;
+    }
+
+    public String[] generateQuestions(OAuth2AuthorizedClient client, String[] ids,int level) {
+        List<String> questions = new ArrayList<>();
+        for(String id : ids) {
+            try{
+                byte[]  imageData = downloadFile(client, id);
+                String imageinBase64 = imageService.encodeImageToBase64(imageData);
+                String result = aiservice.genQuestion(level, imageinBase64);
+                questions.add(result);
+            }
+            catch(Exception e){
+                log.error("Error downloading or encoding image with ID: " + id, e);
+                continue; 
+            }
+        }
+        return questions.toArray(new String[0]);
     }
 
 }
