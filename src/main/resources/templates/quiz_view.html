@@ -1,12 +1,204 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Page Title</title>
-    <link rel='stylesheet' href='main.css'>
+    <title>Quiz - Flux</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f1f8f4;
+            --surface: #ffffff;
+            --text: #14211a;
+            --muted: #5b6b62;
+            --green: #16a34a;
+            --green-strong: #15803d;
+            --green-soft: #dcfce7;
+            --border: #e3ece6;
+            --shadow: 0 10px 30px -12px rgba(20, 83, 45, 0.18);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 12% 0%, rgba(34,197,94,0.10), transparent 45%),
+                radial-gradient(circle at 88% 100%, rgba(22,163,74,0.08), transparent 50%);
+        }
+
+        /* Nav */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.1rem 6%;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            cursor: pointer;
+            letter-spacing: -0.02em;
+        }
+        .logo-mark {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            display: grid; place-items: center;
+            color: white; font-size: 1rem;
+            box-shadow: 0 6px 14px -4px rgba(22,163,74,0.55);
+        }
+        .nav-back {
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--green-strong);
+            padding: 0.55rem 1rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: white;
+            transition: all .2s;
+        }
+        .nav-back:hover { background: var(--green-soft); border-color: var(--green); }
+
+        /* Container */
+        .container {
+            max-width: 820px;
+            margin: 3.5rem auto;
+            padding: 0 1.5rem;
+        }
+        .header-section {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+        .eyebrow {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--green-strong);
+            background: var(--green-soft);
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+        }
+        .header-section h1 {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text);
+            line-height: 1.1;
+        }
+        .header-section p {
+            margin-top: 0.85rem;
+            color: var(--muted);
+            font-size: 1.02rem;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Quiz Cards */
+        .quiz-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            counter-reset: q;
+        }
+        .quiz-card {
+            background: var(--surface);
+            padding: 1.5rem 1.5rem 1.5rem 1.75rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            font-size: 1.02rem;
+            line-height: 1.65;
+            color: var(--text);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+            counter-increment: q;
+        }
+        .quiz-card::before {
+            content: counter(q, decimal-leading-zero);
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            color: white;
+            font-weight: 800;
+            font-size: 0.95rem;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 14px -4px rgba(22,163,74,0.45);
+        }
+        .quiz-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--green);
+            box-shadow: 0 18px 36px -16px rgba(20, 83, 45, 0.28);
+        }
+        .quiz-body { flex: 1; padding-top: 0.15rem; }
+        .question-label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--green-strong);
+            margin-bottom: 0.3rem;
+        }
+        .question-text {
+            display: block;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        @media (max-width: 640px) {
+            nav { padding: 1rem 5%; }
+            .container { margin: 2.25rem auto; }
+            .quiz-card { padding: 1.15rem; gap: 0.85rem; }
+            .quiz-card::before { width: 36px; height: 36px; border-radius: 10px; }
+        }
+    </style>
 </head>
 <body>
-    
+<nav>
+    <div class="logo" onclick="location.href='/'">
+        <span>🖼️ <span style="color: var(--green); font-weight: 700;">Quiz</span></span>
+    </div>
+    <a href="/gallery" class="nav-back">← Back</a>
+</nav>
+
+<div class="container">
+    <div class="header-section">
+        <span class="eyebrow">Knowledge check</span>
+        <h1>Test what you've learned</h1>
+        <p>Take a moment with each question — read carefully and trust your eye.</p>
+    </div>
+
+    <ul class="quiz-list">
+        <li class="quiz-card" th:each="ques : ${questions}">
+            <div class="quiz-body">
+                <span class="question-label">Question</span>
+                <span class="question-text" th:text="${ques}">${ques}</span>
+            </div>
+        </li>
+    </ul>
+</div>
 </body>
 </html>

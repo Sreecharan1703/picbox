@@ -3,8 +3,6 @@ package com.example.picbox.controllers;
 import com.example.picbox.services.GoogleDriveIntegrationService;
 import com.google.api.services.drive.model.File;
 
-import lombok.var;
-
 import java.util.List;
 
 import org.springframework.core.io.ByteArrayResource;
